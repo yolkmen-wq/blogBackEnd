@@ -1,0 +1,45 @@
+info:
+  contact: {}
+paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: 登录
+      parameters:
+      - description: 账号
+        in: formData
+        name: account
+        required: true
+        type: string
+      - description: 密码
+        in: formData
+        name: password
+        required: true
+        type: string
+      responses:
+        "200":
+          description: 获取信息成功
+        "400":
+          description: 获取信息失败
+      tags:
+      - 登录
+  /publish:
+    post:
+      consumes:
+      - application/json
+      description: 发布
+      parameters:
+      - description: 文章内容
+        in: formData
+        name: artic
+        required: true
+        type: string
+      responses:
+        "200":
+          description: 获取信息成功
+        "400":
+          description: 获取信息失败
+      tags:
+      - 发布
+swagger: "2.0"

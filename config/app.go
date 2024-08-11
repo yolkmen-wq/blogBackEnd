@@ -1,0 +1,39 @@
+package config
+
+/*
+*
+参数说明：
+app.spider_path: 爬虫路由
+app.spider_path_name: 爬虫路由名称
+app.debug_path: debug的路由
+app.debug_path_name: debug的路由名称
+cron.timing_spider: 定时爬虫的CRON表达式
+ding.access_token: 钉钉机器人token
+app.spider_mod: async 或者 sync
+app.debug_mod: 开发模式建议设置为`true` 避免修改静态资源需要重启服务
+*/
+var AppJsonConfig = []byte(`
+{
+  "app": {
+    "port": ":8899",
+    "spider_path": "/movies-spider",
+    "spider_path_name": "MoviesSpider",
+    "debug_path": "/debug",
+    "debug_path_name": "Debug",
+    "spider_mod": "async",
+    "debug_mod": "true"
+  },
+  "redis": {
+    "port": "6379",
+    "addr": "47.121.201.137",
+    "password": "",
+    "db": 10
+  },
+  "cron": {
+    "timing_spider": "0 0 1 * * ?"
+  },
+  "ding": {
+    "access_token": ""
+  }
+}
+`)
