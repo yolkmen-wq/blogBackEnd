@@ -6,10 +6,12 @@ import (
 )
 
 type ArticleService interface {
-	GetAllArticles(pageSize int, pageNumber int) ([]models.Article, error)
+	GetAllArticles(pageSize int, pageNumber int, keywords string) ([]models.Article, error)
 	GetArticleById(id int) (models.Article, error)
 	CreateArticle(article models.Article) error
 	GetTags() ([]*models.Tag, error)
+	CreateLink(link models.Link) error
+	GetLinks() ([]models.Link, error)
 }
 
 type articleService struct {
@@ -22,8 +24,8 @@ func NewArticleService(articleRepo *repositories.ArticleRepository) ArticleServi
 	}
 }
 
-func (as *articleService) GetAllArticles(pageSize int, pageNumber int) ([]models.Article, error) {
-	return as.articleRepo.GetAllArticles(pageSize, pageNumber)
+func (as *articleService) GetAllArticles(pageSize int, pageNumber int, keywords string) ([]models.Article, error) {
+	return as.articleRepo.GetAllArticles(pageSize, pageNumber, keywords)
 }
 
 func (as *articleService) GetArticleById(id int) (models.Article, error) {
@@ -36,4 +38,12 @@ func (as *articleService) CreateArticle(article models.Article) error {
 
 func (as *articleService) GetTags() ([]*models.Tag, error) {
 	return as.articleRepo.GetTags()
+}
+
+func (as *articleService) CreateLink(link models.Link) error {
+	return as.articleRepo.CreateLink(link)
+}
+
+func (as *articleService) GetLinks() ([]models.Link, error) {
+	return as.articleRepo.GetLinks()
 }

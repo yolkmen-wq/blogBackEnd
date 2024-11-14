@@ -17,3 +17,10 @@ type Tag struct {
 	TagName string `json:"tagName" db:"name"`
 	Count   int    `json:"count"`
 }
+
+type Link struct {
+	ID       int    `json:"id"`
+	Title    string `json:"title"`
+	Link     string `json:"link"`
+	LinkType string `json:"linkType" db:"link_type"`
+}

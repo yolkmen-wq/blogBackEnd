@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"github.com/go-redis/redis"
 	"github.com/jmoiron/sqlx"
 	"log"
 	"time"
@@ -22,6 +23,7 @@ type AppConfig struct {
 
 var Config AppConfig
 var db *sqlx.DB
+var client *redis.Client
 var err error
 
 func InitConfig() {
@@ -63,3 +65,39 @@ func newDB() (*sqlx.DB, error) {
 	fmt.Println("Connect to Mysql database")
 	return db, nil
 }
+
+func RedisClient() *redis.Client {
+	if client == nil {
+		newClient := newRedis()
+		client = newClient
+	}
+	return client
+}
+
+func newRedis() *redis.Client {
+	client := redis.NewClient(&redis.Options{
+		Addr:     "47.121.201.137:6379",
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
+	// 测试连接
+	_, err := client.Ping().Result()
+	if err != nil {
+		log.Println("Could not connect to Redis: %v", err)
+	} else {
+		log.Println("Successfully connected to Redis")
+	}
+	return client
+}
+
+//count, err := client.Incr("visit_count").Result()
+//if err!= nil {
+//fmt.Println("Error incrementing count:", err)
+//return c.JSON(500, map[string]interface{}{
+//"message": "Internal server error",
+//})
+//}
+//return c.JSON(200, map[string]interface{}{
+//"message":   "Hello, World!",
+//"visitCount": count,
+//})

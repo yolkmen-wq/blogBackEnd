@@ -15,4 +15,6 @@ func SetupArticleRoutes(e *echo.Echo) {
 	e.GET("/getArticleById", articleController.GetArticleById)
 	e.POST("/createArticle", articleController.CreateArticle)
 	e.POST("/getTags", articleController.GetTags)
+	e.POST("/createLink", articleController.CreateLink)
+	e.POST("/getLinks", articleController.GetLinks)
 }
