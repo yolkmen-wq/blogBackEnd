@@ -13,4 +13,5 @@ func SetupUserRoutes(e *echo.Echo) {
 
 	e.POST("/users", userController.CreateUser)
 	e.GET("/users/:id", userController.GetUserByID)
+	e.POST("/registerVisitor", userController.CreateVisitor)
 }

@@ -8,6 +8,7 @@ import (
 type UserService interface {
 	CreateUser(user *models.User) error
 	GetUserByID(id int) (*models.User, error)
+	CreateVisitor(visitor *models.Visitor) (*models.Visitor, error)
 }
 
 type userService struct {
@@ -24,4 +25,8 @@ func (us *userService) CreateUser(user *models.User) error {
 
 func (us *userService) GetUserByID(id int) (*models.User, error) {
 	return us.userRepo.GetUserById(id)
+}
+
+func (us *userService) CreateVisitor(visitor *models.Visitor) (*models.Visitor, error) {
+	return us.userRepo.CreateVisitor(visitor)
 }

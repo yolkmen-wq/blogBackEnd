@@ -33,18 +33,17 @@ func (ar *ArticleRepository) GetAllArticles(pageSize int, pageNumber int, keywor
 
 	// 获取总记录数
 	var totalCount int
-	if err := ar.db.Get(&totalCount, "SELECT COUNT(*) FROM articles"); err != nil {
+	if err := ar.db.Get(&totalCount, "SELECT COUNT(*) FROM articles WHERE title LIKE ?", "%"+keyword+"%"); err != nil {
 		return nil, err
 	}
-
 	// 计算偏移量
 	offset := pageNumber * pageSize
 
 	// 如果 pageSize 和 pageNumber 都为 0，则返回所有文章
-	if pageSize <= 0 || pageNumber < 0 || offset >= totalCount {
-		query = "SELECT * FROM articles WHERE title LIKE ?"
+	if pageSize <= 0 || offset >= totalCount {
+		query = "SELECT id, title, brief, date FROM articles WHERE title LIKE ? ORDER BY date DESC"
 	} else {
-		query = "SELECT * FROM articles LIMIT ? OFFSET ? WHERE title LIKE ?"
+		query = "SELECT id, title, brief, date FROM articles WHERE title LIKE ? ORDER BY date DESC LIMIT ? OFFSET ? "
 	}
 
 	// 执行查询
@@ -53,6 +52,7 @@ func (ar *ArticleRepository) GetAllArticles(pageSize int, pageNumber int, keywor
 		// 如果需要返回所有文章，执行不带参数的查询
 		err = ar.db.Select(&articles, query, "%"+keyword+"%")
 	} else {
+
 		// 当限制数量和偏移量有效时，执行带参数的查询
 		err = ar.db.Select(&articles, query, pageSize, offset, "%"+keyword+"%")
 	}
@@ -94,7 +94,6 @@ func (ar *ArticleRepository) loadArticleTags(articles *[]models.Article) error {
 		var articleID int
 		var tagID int
 		if err := rows.Scan(&articleID, &tagID); err != nil {
-			fmt.Println(97, err)
 			return err
 		}
 		tagsMap[articleID] = append(tagsMap[articleID], tagID)

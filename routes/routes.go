@@ -6,4 +6,5 @@ func InitRoutes(e *echo.Echo) {
 	SetupUserRoutes(e)
 	SetupArticleRoutes(e)
 	SetupAnalyticsRoutes(e)
+	setupCommentRoutes(e)
 }

@@ -57,6 +57,12 @@ func newDB() (*sqlx.DB, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// 设置连接池参数
+	db.SetMaxOpenConns(100)                // 最大打开连接数
+	db.SetMaxIdleConns(50)                 // 最大空闲连接数
+	db.SetConnMaxLifetime(time.Minute * 5) // 连接的最大生命周期
+
 	//检查连接是否成功
 
 	if err = db.Ping(); err != nil {
@@ -76,7 +82,7 @@ func RedisClient() *redis.Client {
 
 func newRedis() *redis.Client {
 	client := redis.NewClient(&redis.Options{
-		Addr:     "47.121.201.137:6379",
+		Addr:     "47.121.201.137:7878",
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
@@ -89,15 +95,3 @@ func newRedis() *redis.Client {
 	}
 	return client
 }
-
-//count, err := client.Incr("visit_count").Result()
-//if err!= nil {
-//fmt.Println("Error incrementing count:", err)
-//return c.JSON(500, map[string]interface{}{
-//"message": "Internal server error",
-//})
-//}
-//return c.JSON(200, map[string]interface{}{
-//"message":   "Hello, World!",
-//"visitCount": count,
-//})
