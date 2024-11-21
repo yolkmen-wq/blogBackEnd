@@ -24,3 +24,9 @@ type Link struct {
 	Link     string `json:"link"`
 	LinkType string `json:"linkType" db:"link_type"`
 }
+
+type ArticleResponse struct {
+	List       []Article `json:"list"`
+	TotalCount int       `json:"totalCount"`
+	TotalPage  int       `json:"totalPage"`
+}

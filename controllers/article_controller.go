@@ -19,13 +19,7 @@ func NewAricleController(service services.ArticleService) *ArticleController {
 }
 
 func (ac *ArticleController) GetAllArticles(c echo.Context) error {
-	//// 读取请求的 body
-	//body, err := io.ReadAll(c.Request().Body)
-	//if err != nil {
-	//	return c.String(http.StatusInternalServerError, "无法读取请求体")
-	//}
-	//defer c.Request().Body.Close()
-	//fmt.Println(28, string(body))
+	// 获取分页参数
 	pageSize, _ := strconv.Atoi(c.QueryParam("pageSize"))
 	pageNum, err := strconv.Atoi(c.QueryParam("pageNum"))
 	keyword := c.QueryParam("keyword")
@@ -37,12 +31,17 @@ func (ac *ArticleController) GetAllArticles(c echo.Context) error {
 		return c.JSON(http.StatusOK, articles)
 	}
 
-	fmt.Println(28, pageSize, pageNum)
 	articles, err := ac.service.GetAllArticles(pageSize, pageNum, keyword)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Error while fetching articles: %v", err))
 	}
-	return c.JSON(http.StatusOK, articles)
+	response := config.Response{
+		Success: true,
+		Message: "请求成功",
+		Data:    articles,
+	}
+
+	return c.JSON(http.StatusOK, response)
 }
 
 func (ac *ArticleController) GetArticleById(c echo.Context) error {

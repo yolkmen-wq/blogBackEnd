@@ -27,20 +27,20 @@ func (ar *ArticleRepository) GetArticleById(id int) (models.Article, error) {
 }
 
 // GetAllArticles 获取文章列表
-func (ar *ArticleRepository) GetAllArticles(pageSize int, pageNumber int, keyword string) ([]models.Article, error) {
+func (ar *ArticleRepository) GetAllArticles(pageSize int, pageNumber int, keyword string) (models.ArticleResponse, error) {
 	var articles []models.Article
 	var query string
 
 	// 获取总记录数
 	var totalCount int
 	if err := ar.db.Get(&totalCount, "SELECT COUNT(*) FROM articles WHERE title LIKE ?", "%"+keyword+"%"); err != nil {
-		return nil, err
+		return models.ArticleResponse{}, err
 	}
 	// 计算偏移量
-	offset := pageNumber * pageSize
+	offset := (pageNumber - 1) * pageSize
 
 	// 如果 pageSize 和 pageNumber 都为 0，则返回所有文章
-	if pageSize <= 0 || offset >= totalCount {
+	if pageSize <= 0 || pageNumber <= 0 {
 		query = "SELECT id, title, brief, date FROM articles WHERE title LIKE ? ORDER BY date DESC"
 	} else {
 		query = "SELECT id, title, brief, date FROM articles WHERE title LIKE ? ORDER BY date DESC LIMIT ? OFFSET ? "
@@ -48,25 +48,29 @@ func (ar *ArticleRepository) GetAllArticles(pageSize int, pageNumber int, keywor
 
 	// 执行查询
 	var err error
-	if pageSize <= 0 || pageNumber < 0 || offset >= totalCount {
+	if pageSize <= 0 || pageNumber <= 0 {
 		// 如果需要返回所有文章，执行不带参数的查询
 		err = ar.db.Select(&articles, query, "%"+keyword+"%")
 	} else {
-
 		// 当限制数量和偏移量有效时，执行带参数的查询
-		err = ar.db.Select(&articles, query, pageSize, offset, "%"+keyword+"%")
+		err = ar.db.Select(&articles, query, "%"+keyword+"%", pageSize, offset)
 	}
 	if err != nil {
-		return nil, err
+		return models.ArticleResponse{}, err
 	}
-
 	// 提取标签
-	err = ar.loadArticleTags(&articles)
-	if err != nil {
-		return nil, err
+	if len(articles) > 0 {
+		err = ar.loadArticleTags(&articles)
+		if err != nil {
+			return models.ArticleResponse{}, err
+		}
 	}
 
-	return articles, nil
+	return models.ArticleResponse{
+		List:       articles,
+		TotalCount: totalCount,                             // 返回总数
+		TotalPage:  (totalCount + pageSize - 1) / pageSize, // 计算总页数
+	}, nil
 }
 
 // loadArticleTags 用于批量加载文章标签
@@ -80,11 +84,13 @@ func (ar *ArticleRepository) loadArticleTags(articles *[]models.Article) error {
 		placeholders[i] = "?" // 或为适用的占位符格式
 		args[i] = article.ID  // 将 ID 添加到 args
 	}
+
 	// 使用 SQL IN 语法进行一次查询
 	query := fmt.Sprintf("SELECT article_id, tag_id FROM article_tags WHERE article_id IN (%s)", strings.Join(placeholders, ", "))
 
 	rows, err := ar.db.Queryx(query, args...)
 	if err != nil {
+		fmt.Println(89, err)
 		return err
 	}
 	defer rows.Close()

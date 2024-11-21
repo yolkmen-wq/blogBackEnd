@@ -6,7 +6,7 @@ import (
 )
 
 type ArticleService interface {
-	GetAllArticles(pageSize int, pageNumber int, keywords string) ([]models.Article, error)
+	GetAllArticles(pageSize int, pageNumber int, keywords string) (models.ArticleResponse, error)
 	GetArticleById(id int) (models.Article, error)
 	CreateArticle(article models.Article) error
 	GetTags() ([]*models.Tag, error)
@@ -24,7 +24,7 @@ func NewArticleService(articleRepo *repositories.ArticleRepository) ArticleServi
 	}
 }
 
-func (as *articleService) GetAllArticles(pageSize int, pageNumber int, keywords string) ([]models.Article, error) {
+func (as *articleService) GetAllArticles(pageSize int, pageNumber int, keywords string) (models.ArticleResponse, error) {
 	return as.articleRepo.GetAllArticles(pageSize, pageNumber, keywords)
 }
 
