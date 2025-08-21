@@ -1,5 +1,5 @@
 # 使用官方的 Go 语言镜像作为构建阶段基础镜像
-FROM golang:1.22.5 AS builder
+FROM golang:latest AS builder
 
 # 设置工作目录
 WORKDIR /app
@@ -18,7 +18,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o myblog ./cmd/main.go
 FROM alpine:3.18
 
 # 安装证书以支持 HTTPS 请求（如需）
-RUN apk --no-cache add ca-certificates
+#RUN apk --no-cache add ca-certificates
 
 # 创建非 root 用户，提升容器安全性
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup

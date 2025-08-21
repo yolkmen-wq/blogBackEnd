@@ -18,12 +18,12 @@ func NewCommentRepository(db *sqlx.DB) *CommentRepository {
 
 // getNickname 获取昵称
 func getNickname(db *sqlx.DB, userID int64) (string, error) {
-	var nickname string
-	err := db.QueryRow(`SELECT nickname FROM visitors WHERE id = ?`, userID).Scan(&nickname)
+	var username string
+	err := db.QueryRow(`SELECT username FROM users WHERE id = ?`, userID).Scan(&username)
 	if err != nil {
 		return "", err
 	}
-	return nickname, nil
+	return username, nil
 }
 
 // getLikeCount 获取点赞数
@@ -40,17 +40,18 @@ func getLikeCount(db *sqlx.DB, commentID int64) (int64, error) {
 func (r *CommentRepository) CreateComment(comment *models.CommentChild) error {
 	err := r.db.QueryRow(`SELECT id FROM post_comment_parent WHERE article_id =? && user_id =?`, comment.ArticleID, comment.UserID).Scan(&comment.ID)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			// 没有找到记录，处理此情况
-			// 插入父评论
-			_, err := r.db.NamedExec(`INSERT INTO post_comment_parent (article_id, user_id, content,create_time ) VALUES (:article_id,:user_id, :content, NOW())`, comment)
-			if err != nil {
-				fmt.Println(31, err)
-				return err
-			}
-		}
+		return err
 	}
-
+	if comment.ID == 0 {
+		// 没有找到记录，处理此情况
+		// 插入父评论
+		_, err := r.db.NamedExec(`INSERT INTO post_comment_parent (article_id, user_id, content,create_time ) VALUES (:article_id,:user_id, :content, NOW())`, comment)
+		if err != nil {
+			fmt.Println("插入父评论失败", err)
+			return err
+		}
+		return nil
+	}
 	// 插入子评论
 	var query string
 	if comment.ReplyID != nil {
@@ -62,7 +63,7 @@ func (r *CommentRepository) CreateComment(comment *models.CommentChild) error {
 	}
 	_, err = r.db.NamedExec(query, comment)
 	if err != nil {
-		fmt.Println(45, err)
+		fmt.Println("插入子评论失败", err)
 		return err
 	}
 
@@ -75,31 +76,37 @@ func (r *CommentRepository) GetCommentByArticleID(articleID int64, visitorID int
 	comments := make([]*models.Comment, 0)
 	rows, err := r.db.Query(`SELECT id, article_id, user_id, content, create_time FROM post_comment_parent WHERE article_id =? ORDER BY create_time DESC`, articleID)
 	if err != nil {
+		fmt.Println("获取父评论失败", err)
 		return nil, err
 	}
 	defer rows.Close()
+	fmt.Println("rows", rows)
 	for rows.Next() {
 		comment := new(models.Comment)
 		var createTimeBytes []byte
 		if err := rows.Scan(&comment.ID, &comment.ArticleID, &comment.UserID, &comment.Content, &createTimeBytes); err != nil {
+			fmt.Println("扫描父评论失败", err)
 			return nil, err
 		}
 
 		// 手动解析时间
 		comment.CreateTime, err = utils.ParseTime(createTimeBytes)
 		if err != nil {
+			fmt.Println("解析父评论时间失败", err)
 			return nil, err
 		}
 
 		// 获取昵称
 		comment.Nickname, err = getNickname(r.db, comment.UserID)
 		if err != nil {
+			fmt.Println("获取父评论的昵称失败", err)
 			return nil, err
 		}
 
 		// 获取点赞数
 		comment.LikeCount, err = getLikeCount(r.db, comment.ID)
 		if err != nil {
+			fmt.Println("获取父评论的点赞数失败", err)
 			return nil, err
 		}
 
@@ -109,6 +116,7 @@ func (r *CommentRepository) GetCommentByArticleID(articleID int64, visitorID int
 			fmt.Println(comment.ID, visitorID)
 			err := r.db.Get(&isLiked, `SELECT COUNT(*) FROM visitor_like WHERE comment_id = ? AND visitor_id = ?`, comment.ID, visitorID)
 			if err != nil {
+				fmt.Println("查询是否点赞失败", err)
 				return nil, err
 			}
 			if isLiked {
@@ -125,6 +133,7 @@ func (r *CommentRepository) GetCommentByArticleID(articleID int64, visitorID int
 	childComments := make([]*models.CommentChild, 0)
 	rows, err = r.db.Query(`SELECT id, article_id, parent_id, user_id, reply_id, content, create_time FROM post_comment_child WHERE article_id =? ORDER BY create_time DESC`, articleID)
 	if err != nil {
+		fmt.Println("获取子评论失败", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -132,6 +141,7 @@ func (r *CommentRepository) GetCommentByArticleID(articleID int64, visitorID int
 		childComment := new(models.CommentChild)
 		var createTimeBytes []byte
 		if err := rows.Scan(&childComment.ID, &childComment.ArticleID, &childComment.ParentID, &childComment.UserID, &childComment.ReplyID, &childComment.Content, &createTimeBytes); err != nil {
+			fmt.Println("扫描子评论失败", err)
 			return nil, err
 		}
 
@@ -161,6 +171,7 @@ func (r *CommentRepository) GetCommentByArticleID(articleID int64, visitorID int
 		row := r.db.QueryRow(query, childComment.UserID)
 		err := row.Scan(&childComment.Nickname) // 直接扫描到 childComment.Nickname
 		if err != nil {
+			fmt.Println("获取子评论的昵称失败", err)
 			return nil, err
 		}
 		for _, parentComment := range comments {

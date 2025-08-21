@@ -48,6 +48,7 @@ func (c *CommentController) GetCommentByArticleID(ctx echo.Context) error {
 	}
 	comments, err := c.commentService.GetCommentByArticleID(articleId, visitorID)
 	if err != nil {
+		fmt.Println(51, err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to get comments")
 	}
 	response := config.Response{

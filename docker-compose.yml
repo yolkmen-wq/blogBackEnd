@@ -1,0 +1,15 @@
+services:
+  web:
+    image: registry.cn-heyuan.aliyuncs.com/my_dk_project/my_docker_two:0.01
+    ports:
+      - "5858:1323"
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+  redis:
+    image: redis:latest
+    ports:
+      - "6011:6011"
+    command: redis-server --port 6011

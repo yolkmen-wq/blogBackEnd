@@ -27,6 +27,10 @@ var db *sqlx.DB
 var client *redis.Client
 var err error
 
+// 定义一个密钥
+var SecretKey = []byte("lyf123456")
+var CaptchaSource = "0123456789abcdefghijklmnopqrstuvwxyz"
+
 func InitConfig() {
 	Config = AppConfig{
 		DatabaseUrl: "47.121.201.137",
@@ -83,7 +87,7 @@ func RedisClient() *redis.Client {
 
 func newRedis() *redis.Client {
 	client := redis.NewClient(&redis.Options{
-		Addr:     "47.121.201.137:7878",
+		Addr:     "47.121.201.137:6011",
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
@@ -96,3 +100,6 @@ func newRedis() *redis.Client {
 	}
 	return client
 }
+
+// 过滤不需要验证的路由
+var ExcludeRoutes = []string{"/login", "/register", "/getCaptcha", "/articles", "/getArticleById", "/createArticle", "/getTags", "/createLink", "/getLinks", "/countVisits"}

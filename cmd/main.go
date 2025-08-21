@@ -2,6 +2,7 @@ package main
 
 import (
 	"blog/config"
+	"blog/middlewares"
 	"blog/routes"
 	_ "blog/routes"
 	"github.com/labstack/echo/v4"
@@ -21,6 +22,10 @@ func main() {
 			echo.GET, echo.POST, echo.PUT, echo.DELETE,
 		},
 	}))
+
+	// Token 验证中间件
+	e.Use(middlewares.AuthMiddleWare)
+
 	routes.InitRoutes(e)
 
 	s := &http.Server{

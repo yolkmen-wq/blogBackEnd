@@ -90,7 +90,6 @@ func (ar *ArticleRepository) loadArticleTags(articles *[]models.Article) error {
 
 	rows, err := ar.db.Queryx(query, args...)
 	if err != nil {
-		fmt.Println(89, err)
 		return err
 	}
 	defer rows.Close()
